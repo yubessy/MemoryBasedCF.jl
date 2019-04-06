@@ -17,8 +17,8 @@ function memorize(Rui::SparseMatrixCSC{Float64,Int})::Memory
     Riu = sparse(Rui')
     bu = biases(Riu)
     bi = biases(Rui)
-    Rui = centering(Rui, bi)
-    Riu = centering(Riu, bu)
+    Rui = centering(Rui, bu)
+    Riu = centering(Riu, bi)
     Sii = cossim(Rui)
     Suu = cossim(Riu)
     Memory(nu, ni, bu, bi, Rui, Riu, Suu, Sii)
@@ -75,10 +75,10 @@ function biases(R::SparseMatrixCSC{Float64,Int})::SparseVector{Float64}
     sparse(sum(R, dims = 1)[:] ./ mapslices(nnz, R, dims = 1)[:])
 end
 
-function centering(R::SparseMatrixCSC{Float64,Int}, by::SparseVector{Float64})::SparseMatrixCSC{Float64,Int}
+function centering(R::SparseMatrixCSC{Float64,Int}, bx::SparseVector{Float64})::SparseMatrixCSC{Float64,Int}
     """centering each values"""
     xs, ys, vs = findnz(R)
-    sparse(xs, ys, vs - by[ys])
+    sparse(xs, ys, vs - bx[xs])
 end
 
 function cossim(R::SparseMatrixCSC{Float64,Int})::SparseMatrixCSC{Float64,Int}
@@ -89,7 +89,7 @@ function cossim(R::SparseMatrixCSC{Float64,Int})::SparseMatrixCSC{Float64,Int}
     w = sparsevec(w)
 
     # normalizing R
-    wR = R .* w
+    wR = R .* w'
 
     # calc similarities
     wR' * wR
