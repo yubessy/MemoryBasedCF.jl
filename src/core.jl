@@ -3,8 +3,8 @@ using SparseArrays
 struct Memory
     nu::Int # N of users
     ni::Int # N of items
-    bu::SparseVector{Float64} # user biases
-    bi::SparseVector{Float64} # item biases
+    bu::Vector{Float64} # user biases
+    bi::Vector{Float64} # item biases
     Rui::SparseMatrixCSC{Float64,Int} # user-item ratings
     Riu::SparseMatrixCSC{Float64,Int} # item-user ratings
     Suu::SparseMatrixCSC{Float64,Int} # user-user similarities
@@ -70,12 +70,12 @@ function userbased_rankings(
     items[perms], selectbyrow(scores, perms)
 end
 
-function biases(R::SparseMatrixCSC{Float64,Int})::SparseVector{Float64}
+function biases(R::SparseMatrixCSC{Float64,Int})::Vector{Float64}
     """biases for each columns"""
-    sparse(sum(R, dims = 1)[:] ./ mapslices(nnz, R, dims = 1)[:])
+    sum(R, dims = 1)[:] ./ mapslices(nnz, R, dims = 1)[:]
 end
 
-function centering(R::SparseMatrixCSC{Float64,Int}, bx::SparseVector{Float64})::SparseMatrixCSC{Float64,Int}
+function centering(R::SparseMatrixCSC{Float64,Int}, bx::Vector{Float64})::SparseMatrixCSC{Float64,Int}
     """centering each values"""
     xs, ys, vs = findnz(R)
     sparse(xs, ys, vs - bx[xs])
