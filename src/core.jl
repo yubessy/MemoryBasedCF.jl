@@ -44,28 +44,26 @@ function userbased_scores(
     scores(m.bi, m.Riu, m.Suu, items, users)'
 end
 
-function itembased_recommendations(
+function itembased_rankings(
     m::Memory,
     k::Int,
     users::Vector{Int},
     target_items::Union{Nothing,Vector{Int}} = nothing
 )::Tuple{Matrix{Int}, Matrix{Float64}}
-    items = target_items == nothing ? collect(1:m.ni) : target_items
-    @assert k <= length(items)
-    scores = itembased_scores(m, users, items)
+    @assert k <= (target_items == nothing ? m.ni : length(target_items))
+    scores = itembased_scores(m, users, target_items)
     perms = topkperm(scores, k)
     perms, scores[perms]
 end
 
-function userbased_recommendations(
+function userbased_rankings(
     m::Memory,
     k::Int,
     users::Vector{Int},
     target_items::Union{Nothing,Vector{Int}} = nothing
 )::Tuple{Matrix{Int}, Matrix{Float64}}
-    items = target_items == nothing ? collect(1:m.ni) : target_items
-    @assert k <= length(items)
-    scores = userbased_scores(m, users, items)
+    @assert k <= (target_items == nothing ? m.ni : length(target_items))
+    scores = userbased_scores(m, users, target_items)
     perms = topkperm(scores, k)
     perms, scores[perms]
 end
