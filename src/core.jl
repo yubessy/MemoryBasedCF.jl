@@ -50,10 +50,11 @@ function itembased_rankings(
     users::Vector{Int},
     target_items::Union{Nothing,Vector{Int}} = nothing
 )::Tuple{Matrix{Int}, Matrix{Float64}}
-    @assert k <= (target_items == nothing ? m.ni : length(target_items))
-    scores = itembased_scores(m, users, target_items)
+    items = target_items == nothing ? collect(1:m.ni) : target_items
+    @assert k <= length(items)
+    scores = itembased_scores(m, users, items)
     perms = topkperm(scores, k)
-    perms, scores[perms]
+    items[perms], selectbyrow(scores, perms)
 end
 
 function userbased_rankings(
@@ -62,10 +63,11 @@ function userbased_rankings(
     users::Vector{Int},
     target_items::Union{Nothing,Vector{Int}} = nothing
 )::Tuple{Matrix{Int}, Matrix{Float64}}
-    @assert k <= (target_items == nothing ? m.ni : length(target_items))
-    scores = userbased_scores(m, users, target_items)
+    items = target_items == nothing ? collect(1:m.ni) : target_items
+    @assert k <= length(items)
+    scores = userbased_scores(m, users, items)
     perms = topkperm(scores, k)
-    perms, scores[perms]
+    items[perms], selectbyrow(scores, perms)
 end
 
 function biases(R::SparseMatrixCSC{Float64,Int})::SparseVector{Float64}
@@ -95,4 +97,6 @@ end
 
 scores(bx, R, S, xs, ys) = bx[xs] .+ R[xs, :] * S[:, ys]
 
-topkperm(V, k) = mapslices(vs -> partialsortperm(vs, 1:k), V, dims = 1)
+topkperm(V, k) = mapslices(vs -> partialsortperm(vs, 1:k, rev = true), V, dims = 2)
+
+selectbyrow(M, I) = vcat((M[i, :][I[i, :]]' for i in 1:size(I, 1))...)
