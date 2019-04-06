@@ -12,6 +12,7 @@ R = sparse([
 
 @testset "default" begin
     m = memorize(R)
+
     @test m.nu == 4
     @test m.ni == 3
     @test m.bu == sparse([1.5, 1.5, 1.5, 2.0])
@@ -38,16 +39,26 @@ R = sparse([
          0.0   0.0   0.0   0.0
          0.0   0.0   0.0   0.0
     ]), atol = 1e-2)
-    @test isapprox(itembased_scores(m, [1, 2, 3, 4]), [
-        2.25  0.75  1.50
-        0.75  1.50  2.25
-        1.50  0.75  2.25
-        2.00  2.00  2.00
-    ], atol = 1e-2)
-    @test isapprox(userbased_scores(m, [1, 2, 3, 4]), [
-        2.5  1.0  2.0
-        0.5  1.0  2.0
-        1.5  1.0  2.0
-        1.5  1.0  2.0
-    ], atol = 1e-2)
+
+    @testset "itembased" begin
+        expected_scores = [
+            2.25  0.75  1.50
+            0.75  1.50  2.25
+            1.50  0.75  2.25
+            2.00  2.00  2.00
+        ]
+        @test isapprox(itembased_scores(m, [1, 2, 3, 4]), expected_scores, atol = 1e-2)
+        @test isapprox(itembased_scores(m, [1, 2], [1, 3]), expected_scores[[1, 2], [1, 3]], atol = 1e-2)
+    end
+
+    @testset "userbased" begin
+        expected_scores = [
+            2.5  1.0  2.0
+            0.5  1.0  2.0
+            1.5  1.0  2.0
+            1.5  1.0  2.0
+        ]
+        @test isapprox(userbased_scores(m, [1, 2, 3, 4]), expected_scores, atol = 1e-2)
+        @test isapprox(userbased_scores(m, [1, 2], [1, 3]), expected_scores[[1, 2], [1, 3]], atol = 1e-2)
+    end
 end

@@ -93,6 +93,6 @@ function cossim(R::SparseMatrixCSC{Float64,Int})::SparseMatrixCSC{Float64,Int}
     wR' * wR
 end
 
-scores(bx, R, S, xs, ys) = bx[xs] .+ R[xs, ys] * S[ys, ys]
+scores(bx, R, S, xs, ys) = bx[xs] .+ R[xs, :] * S[:, ys]
 
 topkperm(V, k) = mapslices(vs -> partialsortperm(vs, 1:k), V, dims = 1)
