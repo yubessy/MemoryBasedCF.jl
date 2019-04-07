@@ -17,13 +17,13 @@ R = sparse([
     @test m.ni == 3
     @test m.bu == sparse([1.5, 1.5, 1.5, 2.0])
     @test m.bi == sparse([1.5, 1.0, 2.0])
-    @test m.Rui == sparse([
+    @test m.Dui == sparse([
          0.5  -0.5   0.0
         -0.5   0.0   0.5
          0.0  -0.5   0.5
          0.0   0.0   0.0
     ])
-    @test m.Riu == sparse([
+    @test m.Diu == sparse([
          0.5  -0.5   0.0   0.0
          0.0   0.0   0.0   0.0
          0.0   0.0   0.0   0.0

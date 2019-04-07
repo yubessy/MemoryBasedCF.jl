@@ -5,8 +5,8 @@ struct Memory
     ni::Int # N of items
     bu::Vector{Float64} # user biases
     bi::Vector{Float64} # item biases
-    Rui::SparseMatrixCSC{Float64,Int} # user-item ratings
-    Riu::SparseMatrixCSC{Float64,Int} # item-user ratings
+    Dui::SparseMatrixCSC{Float64,Int} # user-item ratings
+    Diu::SparseMatrixCSC{Float64,Int} # item-user ratings
     Suu::SparseMatrixCSC{Float64,Int} # user-user similarities
     Sii::SparseMatrixCSC{Float64,Int} # item-item similarities
 end
@@ -17,11 +17,11 @@ function memorize(Rui::SparseMatrixCSC{Float64,Int})::Memory
     Riu = sparse(Rui')
     bu = biases(Riu)
     bi = biases(Rui)
-    Rui = centering(Rui, bu)
-    Riu = centering(Riu, bi)
-    Sii = cossim(Rui)
-    Suu = cossim(Riu)
-    Memory(nu, ni, bu, bi, Rui, Riu, Suu, Sii)
+    Dui = centering(Rui, bu)
+    Diu = centering(Riu, bi)
+    Sii = cossim(Dui)
+    Suu = cossim(Diu)
+    Memory(nu, ni, bu, bi, Dui, Diu, Suu, Sii)
 end
 
 function itembased_scores(
@@ -31,7 +31,7 @@ function itembased_scores(
 )::Matrix{Float64}
     """user-item scores based on item similarities"""
     items = target_items == nothing ? collect(1:m.ni) : target_items
-    scores(m.bu, m.Rui, m.Sii, users, items)
+    scores(m.bu, m.Dui, m.Sii, users, items)
 end
 
 function userbased_scores(
@@ -41,7 +41,7 @@ function userbased_scores(
 )::Matrix{Float64}
     """user-item scores based on user similarities"""
     items = target_items == nothing ? collect(1:m.ni) : target_items
-    scores(m.bi, m.Riu, m.Suu, items, users)'
+    scores(m.bi, m.Diu, m.Suu, items, users)'
 end
 
 function itembased_rankings(
@@ -81,33 +81,33 @@ function centering(R::SparseMatrixCSC{Float64,Int}, bx::Vector{Float64})::Sparse
     sparse(xs, ys, vs - bx[xs])
 end
 
-function cossim(R::SparseMatrixCSC{Float64,Int})::SparseMatrixCSC{Float64,Int}
+function cossim(D::SparseMatrixCSC{Float64,Int})::SparseMatrixCSC{Float64,Int}
     """calc cosine similarity between each columns"""
     # normalizing weights for each columns
-    w = 1. ./ sqrt.(sum(R .^ 2, dims = 1)[:])
+    w = 1. ./ sqrt.(sum(D .^ 2, dims = 1)[:])
     w[isinf.(w)] .= 0.
     w = sparsevec(w)
 
-    # normalizing R
-    wR = R .* w'
+    # normalizing D
+    wD = D .* w'
 
     # calc similarities
-    wR' * wR
+    wD' * wD
 end
 
-function scores(b, R, S, xs, ys)
+function scores(b, D, S, xs, ys)
     b = b[xs]
-    R = R[xs, :]
+    D = D[xs, :]
     S = S[:, ys]
 
-    is, js, vs = findnz(R)
+    is, js, vs = findnz(D)
     I = sparse(is, js, ones(length(vs)))
     N = abs.(S)
     W = 1. ./ (I * N)
     W[isinf.(W)] .= 0.
     W = sparse(W)
 
-    b .+ W .* (R * S)
+    b .+ W .* (D * S)
 end
 
 topkperm(V, k) = mapslices(vs -> partialsortperm(vs, 1:k, rev = true), V, dims = 2)
