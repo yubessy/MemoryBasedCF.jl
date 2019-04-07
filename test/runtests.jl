@@ -112,3 +112,37 @@ R = sparse([
         @test isapprox(ranked_scores, [2.0  2.0; 2.0  1.0], atol = 1e-2)
     end
 end
+
+@testset "centering=false" begin
+    c = Config(centering = false)
+    m = memorize(R, c)
+
+    @test m.nu == 4
+    @test m.ni == 3
+    @test m.bu == [0.0, 0.0, 0.0, 0.0]
+    @test m.bi == [0.0, 0.0, 0.0]
+    @test m.Dui == sparse([
+        2.0  1.0  0.0
+        1.0  0.0  2.0
+        0.0  1.0  2.0
+        0.0  0.0  2.0
+    ])
+    @test m.Diu == sparse([
+        2.0  1.0  0.0  0.0
+        1.0  0.0  1.0  0.0
+        0.0  2.0  2.0  2.0
+    ])
+
+    r2, r5, r12 = sqrt(2), sqrt(5), sqrt(12)
+    @test isapprox(m.Sii, sparse([
+               1.0   2/(r5*r2)  2/(r5*r12)
+         2/(r2*r5)         1.0  2/(r2*r12)
+        2/(r12*r5)  2/(r12*r2)         1.0
+    ]), atol = 1e-2)
+    @test isapprox(m.Suu, sparse([
+              1.0  2/(r5*r5)  1/(r5*r5)       0.0
+        2/(r5*r5)        1.0  4/(r5*r5)  4/(r5*2)
+        1/(r5*r5)  4/(r5*r5)        1.0  4/(r5*2)
+              0.0   4/(r5*2)   4/(r5*2)       1.0
+    ]), atol = 1e-2)
+end
