@@ -1,5 +1,15 @@
 using SparseArrays
 
+struct Config
+    centering::Bool
+
+    function Config(;centering = true)
+        new(centering)
+    end
+end
+
+const defaultconfig = Config()
+
 struct Memory
     nu::Int # number of users
     ni::Int # number of items
@@ -11,14 +21,21 @@ struct Memory
     Sii::SparseMatrixCSC{Float64,Int} # item-item similarities
 end
 
-function memorize(Rui::SparseMatrixCSC{Float64,Int})::Memory
+function memorize(Rui::SparseMatrixCSC{Float64,Int}, config::Config = defaultconfig)::Memory
     """construct memory for recommendation"""
     nu, ni = size(Rui)
     Riu = sparse(Rui')
-    bu = biases(Riu)
-    bi = biases(Rui)
-    Dui = centering(Rui, bu)
-    Diu = centering(Riu, bi)
+    if config.centering
+        bu = biases(Riu)
+        bi = biases(Rui)
+        Dui = centering(Rui, bu)
+        Diu = centering(Riu, bi)
+    else
+        bu = zeros(nu)
+        bi = zeros(ni)
+        Dui = Rui
+        Diu = Riu
+    end
     Sii = cossim(Dui)
     Suu = cossim(Diu)
     Memory(nu, ni, bu, bi, Dui, Diu, Suu, Sii)
