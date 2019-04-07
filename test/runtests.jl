@@ -15,8 +15,8 @@ R = sparse([
 
     @test m.nu == 4
     @test m.ni == 3
-    @test m.bu == sparse([1.5, 1.5, 1.5, 2.0])
-    @test m.bi == sparse([1.5, 1.0, 2.0])
+    @test m.bu == [1.5, 1.5, 1.5, 2.0]
+    @test m.bi == [1.5, 1.0, 2.0]
     @test m.Dui == sparse([
          0.5  -0.5   0.0
         -0.5   0.0   0.5
