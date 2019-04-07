@@ -75,10 +75,10 @@ function biases(R::SparseMatrixCSC{Float64,Int})::Vector{Float64}
     sum(R, dims = 1)[:] ./ mapslices(nnz, R, dims = 1)[:]
 end
 
-function centering(R::SparseMatrixCSC{Float64,Int}, bx::Vector{Float64})::SparseMatrixCSC{Float64,Int}
+function centering(R::SparseMatrixCSC{Float64,Int}, b::Vector{Float64})::SparseMatrixCSC{Float64,Int}
     """centering each values"""
     xs, ys, vs = findnz(R)
-    sparse(xs, ys, vs - bx[xs])
+    sparse(xs, ys, vs - b[xs])
 end
 
 function cossim(D::SparseMatrixCSC{Float64,Int})::SparseMatrixCSC{Float64,Int}
