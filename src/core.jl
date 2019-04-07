@@ -95,7 +95,20 @@ function cossim(R::SparseMatrixCSC{Float64,Int})::SparseMatrixCSC{Float64,Int}
     wR' * wR
 end
 
-scores(bx, R, S, xs, ys) = bx[xs] .+ R[xs, :] * S[:, ys]
+function scores(b, R, S, xs, ys)
+    b = b[xs]
+    R = R[xs, :]
+    S = S[:, ys]
+
+    is, js, vs = findnz(R)
+    I = sparse(is, js, ones(length(vs)))
+    N = abs.(S)
+    W = 1. ./ (I * N)
+    W[isinf.(W)] .= 0.
+    W = sparse(W)
+
+    b .+ W .* (R * S)
+end
 
 topkperm(V, k) = mapslices(vs -> partialsortperm(vs, 1:k, rev = true), V, dims = 2)
 
