@@ -1,8 +1,8 @@
 using SparseArrays
 
 struct Memory
-    nu::Int # N of users
-    ni::Int # N of items
+    nu::Int # number of users
+    ni::Int # number of items
     bu::Vector{Float64} # user biases
     bi::Vector{Float64} # item biases
     Dui::SparseMatrixCSC{Float64,Int} # user-item ratings
